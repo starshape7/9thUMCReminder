@@ -2,7 +2,7 @@ name: Weekly Discord Reminder
 
 on:
   schedule:
-    - cron: "25 5 * * 2"
+    - cron: "30 5 * * 2"
   workflow_dispatch:
 
 jobs:
