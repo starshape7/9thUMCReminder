@@ -2,9 +2,8 @@ name: Weekly Discord Reminder
 
 on:
   schedule:
-    # 매주 화요일 16:00 KST = 매주 화요일 07:00 UTC
-    - cron: "0 7 * * 2"
-  workflow_dispatch: {}   # 수동 테스트 버튼
+    - cron: "0 7 * * 2"   # 매주 화요일 16:00 KST (UTC+9)
+  workflow_dispatch:
 
 jobs:
   post:
@@ -13,34 +12,30 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       - name: Post to Discord
         env:
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}   # 리포 Secrets에 저장해둔 웹훅 URL
-          START_DATE: "2025-09-22"                  # 1주차 시작(예: 월요일) KST 기준 날짜
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          START_DATE: "2025-09-22"   # 1주차 시작일(월요일) KST
+        shell: bash
         run: |
-          node - <<'JS'
+          set -euo pipefail
+          cat > send.js <<'JS'
           const weekMs = 7*24*60*60*1000;
-
-          // 1주차 시작일(KST 00:00)
           const startMs = new Date(process.env.START_DATE + 'T00:00:00+09:00').getTime();
+          const nowKstMs = Date.now() + 9*60*60*1000;
 
-          // 현재 시각(KST)
-          const nowUtc = new Date();
-          const nowKstMs = nowUtc.getTime() + 9*60*60*1000;
-
-          // 주차 계산 (1부터 시작)
           let weeks = Math.floor((nowKstMs - startMs)/weekMs) + 1;
           if (weeks < 1) weeks = 1;
 
-          const content =
-          `@everyone
+          const content = `@everyone
           📌 금일 ${weeks}주차 피드백 링크 제출 마감 안내
           - 피드백 링크 미첨부시 파트장에게 **1 out**이 부과되며, 3회 누적 시 탈부 대상이 될 수 있습니다.
           - 파트장 분들이 끝까지 완주하실 수 있도록 회장단 여러분께서도 함께 확인해주시면 감사하겠습니다.`;
 
           const payload = {
             content,
-            allowed_mentions: { parse: ["everyone"] } // @everyone 허용
+            allowed_mentions: { parse: ["everyone"] }
           };
 
           fetch(process.env.WEBHOOK_URL, {
@@ -55,3 +50,5 @@ jobs:
             process.exit(1);
           });
           JS
+
+          node send.js
