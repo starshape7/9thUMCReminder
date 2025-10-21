@@ -16,7 +16,7 @@ jobs:
       - name: Post to Discord
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-          START_DATE: "2025-09-22"   # 1주차 시작일(월요일) KST
+          START_DATE: "2025-09-29"   # 1주차 시작일(월요일) KST
         shell: bash
         run: |
           set -euo pipefail
