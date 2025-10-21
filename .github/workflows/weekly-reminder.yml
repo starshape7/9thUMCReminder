@@ -1,58 +1,58 @@
-name: Weekly Discord Reminder
+# name: Weekly Discord Reminder
 
-on:
-  schedule:
-    - cron: "0 7 * * 2"   # 매주 화요일 16:00 KST (UTC+9)
-  workflow_dispatch:
+# on:
+#   schedule:
+#     - cron: "0 7 * * 2"   # 매주 화요일 16:00 KST (UTC+9)
+#   workflow_dispatch:
 
-jobs:
-  post:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+# jobs:
+#   post:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
 
-      - name: Post to Discord
-        env:
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-          START_DATE: "2025-10-06"   # 1주차 시작일(월요일) KST
-        shell: bash
-        run: |
-          set -euo pipefail
-          cat > send.js <<'JS'
-          const weekMs = 7*24*60*60*1000;
-          const startMs = new Date(process.env.START_DATE + 'T00:00:00+09:00').getTime();
-          const nowKstMs = Date.now() + 9*60*60*1000;
+#       - name: Post to Discord
+#         env:
+#           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+#           START_DATE: "2025-10-06"   # 1주차 시작일(월요일) KST
+#         shell: bash
+#         run: |
+#           set -euo pipefail
+#           cat > send.js <<'JS'
+#           const weekMs = 7*24*60*60*1000;
+#           const startMs = new Date(process.env.START_DATE + 'T00:00:00+09:00').getTime();
+#           const nowKstMs = Date.now() + 9*60*60*1000;
 
-          let weeks = Math.floor((nowKstMs - startMs)/weekMs) + 1;
-          if (weeks < 1) weeks = 1;
+#           let weeks = Math.floor((nowKstMs - startMs)/weekMs) + 1;
+#           if (weeks < 1) weeks = 1;
 
-          const content = `@everyone
+#           const content = `@everyone
           
-          📌 금일 ${weeks}주차 피드백 링크 제출 마감 안내
-          > - 피드백 링크 미기입시 매주 **1 out**이 부과되며, 3회 누적 시 탈부 대상이 될 수 있습니다.
-          > - 파트장분들이 끝까지 완주하실 수 있도록 회장단 여러분께서도 함께 확인해주시면 감사하겠습니다.
+#           📌 금일 ${weeks}주차 피드백 링크 제출 마감 안내
+#           > - 피드백 링크 미기입시 매주 **1 out**이 부과되며, 3회 누적 시 탈부 대상이 될 수 있습니다.
+#           > - 파트장분들이 끝까지 완주하실 수 있도록 회장단 여러분께서도 함께 확인해주시면 감사하겠습니다.
 
-          궁금한 점이나 건의사항은 언제든지 문의주세요!
-          감사합니다.😊`;
+#           궁금한 점이나 건의사항은 언제든지 문의주세요!
+#           감사합니다.😊`;
           
-          const payload = {
-            content,
-            allowed_mentions: { parse: ["everyone"] }
-          };
+#           const payload = {
+#             content,
+#             allowed_mentions: { parse: ["everyone"] }
+#           };
 
-          fetch(process.env.WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          }).then(async (r) => {
-            if (!r.ok) throw new Error('Discord HTTP ' + r.status + ' ' + await r.text());
-            console.log('Sent reminder for week', weeks);
-          }).catch((e) => {
-            console.error(e);
-            process.exit(1);
-          });
-          JS
+#           fetch(process.env.WEBHOOK_URL, {
+#             method: 'POST',
+#             headers: { 'Content-Type': 'application/json' },
+#             body: JSON.stringify(payload)
+#           }).then(async (r) => {
+#             if (!r.ok) throw new Error('Discord HTTP ' + r.status + ' ' + await r.text());
+#             console.log('Sent reminder for week', weeks);
+#           }).catch((e) => {
+#             console.error(e);
+#             process.exit(1);
+#           });
+#           JS
 
-          node send.js
+#           node send.js
